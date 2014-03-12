@@ -5,6 +5,7 @@
 #include <ngx_http.h>
 #include <hiredis/hiredis.h>
 #include <hiredis/async.h>
+#include <signal.h>
 
 #define SELECT_DATABASE_COMMAND "SELECT %d"
 #define PING_DATABASE_COMMAND "PING"
@@ -12,6 +13,13 @@
 int redis_nginx_event_attach(redisAsyncContext *ac);
 void redis_nginx_cleanup(void *privdata);
 void redis_nginx_ping_callback(redisAsyncContext *ac, void *rep, void *privdata);
+
+
+void
+redis_nginx_init(void)
+{
+    signal(SIGPIPE, SIG_IGN);
+}
 
 
 void
