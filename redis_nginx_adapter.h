@@ -14,6 +14,21 @@ void redis_nginx_cleanup(void *privdata);
 void redis_nginx_ping_callback(redisAsyncContext *ac, void *rep, void *privdata);
 
 
+void
+redis_nginx_select_callback(redisAsyncContext *ac, void *rep, void *privdata)
+{
+    redisAsyncContext **context = privdata;
+    redisReply *reply = rep;
+    if ((reply == NULL) || (reply->type == REDIS_REPLY_ERROR)) {
+        if (context != NULL) {
+            *context = NULL;
+        }
+        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not select redis database");
+        redisAsyncFree(ac);
+    }
+}
+
+
 redisAsyncContext *
 redis_nginx_open_context(const char *host, int port, int database, redisAsyncContext **context)
 {
@@ -38,7 +53,7 @@ redis_nginx_open_context(const char *host, int port, int database, redisAsyncCon
             *context = ac;
         }
 
-        redisAsyncCommand(ac, NULL, NULL, SELECT_DATABASE_COMMAND, database);
+        redisAsyncCommand(ac, redis_nginx_select_callback, context, SELECT_DATABASE_COMMAND, database);
     } else {
         ac = *context;
     }
