@@ -182,7 +182,7 @@ redis_nginx_cleanup(void *privdata)
         }
 
         ngx_free_connection(connection);
-        connection->data = NULL;
+
         ac->ev.data = NULL;
     }
 }
