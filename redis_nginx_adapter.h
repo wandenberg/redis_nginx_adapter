@@ -45,12 +45,12 @@ redis_nginx_open_context(const char *host, int port, int database, redisAsyncCon
     if ((context == NULL) || (*context == NULL) || (*context)->err) {
         ac = redisAsyncConnect(host, port);
         if (ac == NULL) {
-            ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not allocate the redis context");
+            ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not allocate the redis context for %s:%d", host, port);
             return NULL;
         }
 
         if (ac->err) {
-            ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not create the redis context - %s", ac->errstr);
+            ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not create the redis context for %s:%d - %s", host, port, ac->errstr);
             redisAsyncFree(ac);
             return NULL;
         }
