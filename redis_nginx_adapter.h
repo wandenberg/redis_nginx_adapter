@@ -76,6 +76,7 @@ redis_nginx_force_close_context(redisAsyncContext **context)
     if ((context != NULL) && (*context != NULL)) {
         redisAsyncContext *ac = *context;
         if (!ac->err) {
+            redisAsyncDisconnect(ac);
             redis_nginx_cleanup(ac->ev.data);
         }
         *context = NULL;
@@ -202,9 +203,10 @@ redis_nginx_cleanup(void *privdata)
         if ((connection->fd != NGX_INVALID_FILE)) {
             redis_nginx_del_read(privdata);
             redis_nginx_del_write(privdata);
+            ngx_close_connection(connection);
+        } else {
+            ngx_free_connection(connection);
         }
-
-        ngx_free_connection(connection);
 
         ac->ev.data = NULL;
     }
