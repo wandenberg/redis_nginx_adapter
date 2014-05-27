@@ -77,7 +77,6 @@ redis_nginx_force_close_context(redisAsyncContext **context)
         redisAsyncContext *ac = *context;
         if (!ac->err) {
             redisAsyncDisconnect(ac);
-            redis_nginx_cleanup(ac->ev.data);
         }
         *context = NULL;
     }
