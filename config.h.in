@@ -15,11 +15,11 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define to 1 if you have the <ngx_core.h> header file. */
-#undef HAVE_NGX_CORE_H
+/* Define to 1 if you have the <ngx_connection.h> header file. */
+#undef HAVE_NGX_CONNECTION_H
 
-/* Define to 1 if you have the <ngx_http.h> header file. */
-#undef HAVE_NGX_HTTP_H
+/* Define to 1 if you have the <ngx_event.h> header file. */
+#undef HAVE_NGX_EVENT_H
 
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H

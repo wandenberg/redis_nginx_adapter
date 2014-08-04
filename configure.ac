@@ -62,8 +62,8 @@ AC_CHECK_HEADERS(hiredis/hiredis.h hiredis/async.h, , [
   AC_MSG_ERROR([Couldn't find hiredis/hiredis.h... try downloading the source from https://github.com/redis/hiredis/releases])
 ])
 
-AC_CHECK_HEADERS(ngx_core.h ngx_http.h, , [
-  AC_MSG_ERROR([Couldn't find ngx_http.h... use the --with-nginx-dir to set the path with Nginx sources])
+AC_CHECK_HEADERS(ngx_event.h ngx_connection.h, , [
+  AC_MSG_ERROR([Couldn't find ngx_connection.h... use the --with-nginx-dir to set the path with Nginx sources])
 ])
 
 AC_CHECK_HEADERS(signal.h, , [
