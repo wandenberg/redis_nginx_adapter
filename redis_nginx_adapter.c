@@ -66,6 +66,39 @@ redis_nginx_open_context(const char *host, int port, int database, redisAsyncCon
 }
 
 
+redisAsyncContext *
+redis_nginx_open_context_unix(const char *path, int database, redisAsyncContext **context)
+{
+    redisAsyncContext *ac = NULL;
+
+    if ((context == NULL) || (*context == NULL) || (*context)->err) {
+        ac = redisAsyncConnectUnix(path);
+        if (ac == NULL) {
+            ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not allocate the redis context for %s", path);
+            return NULL;
+        }
+
+        if (ac->err) {
+            ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not create the redis context for %s - %s", path, ac->errstr);
+            redisAsyncFree(ac);
+            return NULL;
+        }
+
+        redis_nginx_event_attach(ac);
+
+        if (context != NULL) {
+            *context = ac;
+        }
+
+        redisAsyncCommand(ac, redis_nginx_select_callback, context, SELECT_DATABASE_COMMAND, database);
+    } else {
+        ac = *context;
+    }
+
+    return ac;
+}
+
+
 void
 redis_nginx_force_close_context(redisAsyncContext **context)
 {
