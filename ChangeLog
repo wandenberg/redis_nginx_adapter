@@ -1,2 +1,5 @@
+2014-10-27  1.0.0-1 Wandenberg Peixoto <wandenberg@gmail.com>
+  * Add support to connect to redis using unix socket.
+
 2014-06-21  0.1.0-1 Wandenberg Peixoto <wandenberg@gmail.com>
   * Initial Version.
