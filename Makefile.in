@@ -133,6 +133,10 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+libredis_nginx_adapter_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(libredis_nginx_adapter_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -333,6 +337,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = libredis_nginx_adapter.la
+libredis_nginx_adapter_la_LDFLAGS = -version-info 1:0:0
 libredis_nginx_adapter_la_SOURCES = redis_nginx_adapter.c
 include_HEADERS = redis_nginx_adapter.h
 libredis_nginx_adapter_la_CPPFLAGS = $(NGINX_CPPFLAGS)
@@ -427,7 +432,7 @@ clean-libLTLIBRARIES:
 	}
 
 libredis_nginx_adapter.la: $(libredis_nginx_adapter_la_OBJECTS) $(libredis_nginx_adapter_la_DEPENDENCIES) $(EXTRA_libredis_nginx_adapter_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK) -rpath $(libdir) $(libredis_nginx_adapter_la_OBJECTS) $(libredis_nginx_adapter_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libredis_nginx_adapter_la_LINK) -rpath $(libdir) $(libredis_nginx_adapter_la_OBJECTS) $(libredis_nginx_adapter_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
