@@ -105,7 +105,7 @@ redis_nginx_force_close_context(redisAsyncContext **context)
     if ((context != NULL) && (*context != NULL)) {
         redisAsyncContext *ac = *context;
         if (!ac->err) {
-            redisAsyncDisconnect(ac);
+            redisAsyncFree(ac);
         }
         *context = NULL;
     }
