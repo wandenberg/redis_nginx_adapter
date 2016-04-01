@@ -1,3 +1,6 @@
+2015-12-08  1.0.1-1 Wandenberg Peixoto <wandenberg@gmail.com>
+  * Replace redisAsyncDisconnect with redisAsyncFree on redis_nginx_force_close_context function.
+
 2014-10-27  1.0.0-1 Wandenberg Peixoto <wandenberg@gmail.com>
   * Add support to connect to redis using unix socket.
 
