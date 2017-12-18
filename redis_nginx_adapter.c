@@ -1,8 +1,9 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include <signal.h>
-#include <redis_nginx_adapter.h>
+#include "redis_nginx_adapter.h"
 
+#define AUTH_COMMAND "AUTH %s"
 #define SELECT_DATABASE_COMMAND "SELECT %d"
 #define PING_DATABASE_COMMAND "PING"
 
@@ -32,9 +33,23 @@ redis_nginx_select_callback(redisAsyncContext *ac, void *rep, void *privdata)
     }
 }
 
+void
+redis_nginx_auth_callback(redisAsyncContext *ac, void *rep, void *privdata)
+{
+    redisAsyncContext **context = privdata;
+    redisReply *reply = rep;
+    if ((reply == NULL) || (reply->type == REDIS_REPLY_ERROR)) {
+        if (context != NULL) {
+            *context = NULL;
+        }
+        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not authenticate to redis");
+        redisAsyncFree(ac);
+    }
+}
+
 
 redisAsyncContext *
-redis_nginx_open_context(const char *host, int port, int database, redisAsyncContext **context)
+redis_nginx_open_context(const char *host, int port, int database, const char* password, redisAsyncContext **context)
 {
     redisAsyncContext *ac = NULL;
 
@@ -57,6 +72,9 @@ redis_nginx_open_context(const char *host, int port, int database, redisAsyncCon
             *context = ac;
         }
 
+        if (password != NULL) {
+            redisAsyncCommand(ac, redis_nginx_auth_callback, context, AUTH_COMMAND, password);
+        }
         redisAsyncCommand(ac, redis_nginx_select_callback, context, SELECT_DATABASE_COMMAND, database);
     } else {
         ac = *context;
@@ -67,7 +85,7 @@ redis_nginx_open_context(const char *host, int port, int database, redisAsyncCon
 
 
 redisAsyncContext *
-redis_nginx_open_context_unix(const char *path, int database, redisAsyncContext **context)
+redis_nginx_open_context_unix(const char *path, int database, const char* password, redisAsyncContext **context)
 {
     redisAsyncContext *ac = NULL;
 
@@ -90,6 +108,9 @@ redis_nginx_open_context_unix(const char *path, int database, redisAsyncContext 
             *context = ac;
         }
 
+        if (password != NULL) {
+            redisAsyncCommand(ac, redis_nginx_auth_callback, context, AUTH_COMMAND, password);
+        }
         redisAsyncCommand(ac, redis_nginx_select_callback, context, SELECT_DATABASE_COMMAND, database);
     } else {
         ac = *context;
