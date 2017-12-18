@@ -1,7 +1,7 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 #include <signal.h>
-#include <redis_nginx_adapter.h>
+#include "redis_nginx_adapter.h"
 
 #define SELECT_DATABASE_COMMAND "SELECT %d"
 #define PING_DATABASE_COMMAND "PING"
@@ -32,6 +32,22 @@ redis_nginx_select_callback(redisAsyncContext *ac, void *rep, void *privdata)
     }
 }
 
+void
+redis_nginx_authen_callback(redisAsyncContext *ac, void *rep, void *privdata)
+{
+    redisAsyncContext **context = privdata;
+    redisReply *reply = rep;
+    if ((reply == NULL) || (reply->type == REDIS_REPLY_ERROR)) {
+        if (context != NULL) {
+            *context = NULL;
+        }
+        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not select redis database");
+        redisAsyncFree(ac);
+    } else {
+        ngx_log_debug(NGX_LOG_DEBUG_HTTP, ngx_cycle->log, 0,
+                           "Redis authentication successfully");
+    }
+}
 
 redisAsyncContext *
 redis_nginx_open_context(const char *host, int port, int database, redisAsyncContext **context)
@@ -57,6 +73,39 @@ redis_nginx_open_context(const char *host, int port, int database, redisAsyncCon
             *context = ac;
         }
 
+        redisAsyncCommand(ac, redis_nginx_select_callback, context, SELECT_DATABASE_COMMAND, database);
+    } else {
+        ac = *context;
+    }
+
+    return ac;
+}
+
+redisAsyncContext *
+redis_nginx_open_context_with_password(const char *host, int port, char* password, int database, redisAsyncContext **context)
+{
+    redisAsyncContext *ac = NULL;
+
+    if ((context == NULL) || (*context == NULL) || (*context)->err) {
+        ac = redisAsyncConnect(host, port);
+        if (ac == NULL) {
+            ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not allocate the redis context for %s:%d", host, port);
+            return NULL;
+        }
+
+        if (ac->err) {
+            ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not create the redis context for %s:%d - %s", host, port, ac->errstr);
+            redisAsyncFree(ac);
+            return NULL;
+        }
+
+        redis_nginx_event_attach(ac);
+
+        if (context != NULL) {
+            *context = ac;
+        }
+
+        redisAsyncCommand(ac, redis_nginx_authen_callback, context, "AUTH %s", password);
         redisAsyncCommand(ac, redis_nginx_select_callback, context, SELECT_DATABASE_COMMAND, database);
     } else {
         ac = *context;
@@ -214,6 +263,7 @@ void
 redis_nginx_cleanup(void *privdata)
 {
     if (privdata) {
+        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "close redis connection");
         ngx_connection_t *connection = (ngx_connection_t *) privdata;
         redisAsyncContext *ac = (redisAsyncContext *) connection->data;
         if (ac->err) {
@@ -229,6 +279,7 @@ redis_nginx_cleanup(void *privdata)
         }
 
         if ((connection->fd != NGX_INVALID_FILE)) {
+            
             redis_nginx_del_read(privdata);
             redis_nginx_del_write(privdata);
             ngx_close_connection(connection);
