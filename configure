@@ -12207,6 +12207,7 @@ fi
 NGINX_CPPFLAGS="-I $nginx_dir/src \
  -I $nginx_dir/src/core \
  -I $nginx_dir/src/http \
+ -I $nginx_dir/src/http/v2 \
  -I $nginx_dir/src/os/unix \
  -I $nginx_dir/src/event \
  -I $nginx_dir/src/http/modules \

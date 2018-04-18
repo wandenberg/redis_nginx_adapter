@@ -1,3 +1,6 @@
+2018-01-16  1.1.0-1 Wandenberg Peixoto <wandenberg@gmail.com>
+  * Add support to redis authentication.
+
 2015-12-08  1.0.1-1 Wandenberg Peixoto <wandenberg@gmail.com>
   * Replace redisAsyncDisconnect with redisAsyncFree on redis_nginx_force_close_context function.
 
