@@ -4,8 +4,8 @@ redis_nginx_adapter
 An adapter to use the events structure from Nginx on communication with redis, using redis asynchronous context.
 It requires [hiredis](https://github.com/redis/hiredis) >= 0.11.0, and Nginx headers.
 
-Instalation
------------
+Installation
+------------
 
 * get Nginx source and configure it with ./configure
 * get hiredis source, configure and install it
@@ -17,9 +17,20 @@ Instalation
 Basic usage
 -----------
 
+### Without authentication
+
 redis_nginx_init();
 redisAsyncContext *redis_server = NULL;
-if (redis_nginx_open_context((const char *) "localhost", 6379, 0, &redis_server) != NULL) {
+if (redis_nginx_open_context((const char *) "localhost", 6379, 0, NULL, &redis_server) != NULL) {
+    redisAsyncCommand(redis_server, NULL, NULL, "SET %b %d-%d", r->uri.data, r->uri.len, r->headers_out.status, r->headers_out.content_length_n);
+}
+redis_nginx_close_context(&redis_server);
+
+### With authentication
+
+redis_nginx_init();
+redisAsyncContext *redis_server = NULL;
+if (redis_nginx_open_context((const char *) "localhost", 6379, 0, (const char*) "password", &redis_server) != NULL) {
     redisAsyncCommand(redis_server, NULL, NULL, "SET %b %d-%d", r->uri.data, r->uri.len, r->headers_out.status, r->headers_out.content_length_n);
 }
 redis_nginx_close_context(&redis_server);
