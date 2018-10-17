@@ -1,0 +1,41 @@
+src = $(wildcard *.c)
+obj = $(src:.c=.o)
+alib = libredis_nginx_adapter.a
+header = redis_nginx_adapter.h
+
+NGINX_CPPFLAGS = -I $(NGINX_DIR)/src \
+ -I $(NGINX_DIR)/src/core \
+ -I $(NGINX_DIR)/src/http \
+ -I $(NGINX_DIR)/src/http/v2 \
+ -I $(NGINX_DIR)/src/os/unix \
+ -I $(NGINX_DIR)/src/event \
+ -I $(NGINX_DIR)/src/http/modules \
+ -I $(NGINX_DIR)/objs
+
+HIREDIS_CPPFLAGS = -I $(HIREDIS_DIR)/include
+
+OPENSSL_CPPFLAGS = -I $(OPENSSL_DIR)/include
+
+CFLAGS = $(CPPFLAGS) $(NGINX_CPPFLAGS) $(HIREDIS_CPPFLAGS) $(OPENSSL_CPPFLAGS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(alib): $(obj)
+	$(AR) rcs $@ $^
+
+.PHONY: install
+install: $(alib)
+	mkdir -p $(DESTDIR)$(PREFIX)/lib
+	mkdir -p $(DESTDIR)$(PREFIX)/include
+	cp $(alib) $(DESTDIR)$(PREFIX)/lib/$(alib)
+	cp $(header) $(DESTDIR)$(PREFIX)/include/
+
+.PHONY: uninstall
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/lib/$(alib)
+	rm -f $(DESTDIR)$(PREFIX)/include/$(header)
+
+.PHONY: clean
+clean:
+	rm -f $(obj) $(alib)

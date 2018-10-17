@@ -10,7 +10,7 @@ Installation
 * get Nginx source and configure it with ./configure
 * get hiredis source, configure and install it
 * configure redis_nginx_adapter pointing to nginx source dir and hiredis like
-  ./configure --with-nginx-dir=../nginx-1.7.1 --with-hiredis-dir=/opt
+  ./configure --with-nginx-dir=../nginx-1.7.1 --with-hiredis-dir=/opt --with-openssl-dir=/usr/local/opt/openssl
   make
   make install
 
