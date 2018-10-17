@@ -33,6 +33,7 @@ redis_nginx_select_callback(redisAsyncContext *ac, void *rep, void *privdata)
     }
 }
 
+
 void
 redis_nginx_auth_callback(redisAsyncContext *ac, void *rep, void *privdata)
 {
@@ -49,12 +50,17 @@ redis_nginx_auth_callback(redisAsyncContext *ac, void *rep, void *privdata)
 
 
 redisAsyncContext *
-redis_nginx_open_context(const char *host, int port, int database, const char* password, redisAsyncContext **context)
+redis_nginx_open_context_internal(const char *path, const char *host, int port, int database, const char* password, redisAsyncContext **context)
 {
     redisAsyncContext *ac = NULL;
 
     if ((context == NULL) || (*context == NULL) || (*context)->err) {
-        ac = redisAsyncConnect(host, port);
+        if (path != NULL) {
+            ac = redisAsyncConnectUnix(path);
+        } else {
+            ac = redisAsyncConnect(host, port);
+        }
+
         if (ac == NULL) {
             ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not allocate the redis context for %s:%d", host, port);
             return NULL;
@@ -85,38 +91,16 @@ redis_nginx_open_context(const char *host, int port, int database, const char* p
 
 
 redisAsyncContext *
+redis_nginx_open_context(const char *host, int port, int database, const char* password, redisAsyncContext **context)
+{
+	return redis_nginx_open_context_internal(NULL, host, port, database, password, context);
+}
+
+
+redisAsyncContext *
 redis_nginx_open_context_unix(const char *path, int database, const char* password, redisAsyncContext **context)
 {
-    redisAsyncContext *ac = NULL;
-
-    if ((context == NULL) || (*context == NULL) || (*context)->err) {
-        ac = redisAsyncConnectUnix(path);
-        if (ac == NULL) {
-            ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not allocate the redis context for %s", path);
-            return NULL;
-        }
-
-        if (ac->err) {
-            ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not create the redis context for %s - %s", path, ac->errstr);
-            redisAsyncFree(ac);
-            return NULL;
-        }
-
-        redis_nginx_event_attach(ac);
-
-        if (context != NULL) {
-            *context = ac;
-        }
-
-        if (password != NULL) {
-            redisAsyncCommand(ac, redis_nginx_auth_callback, context, AUTH_COMMAND, password);
-        }
-        redisAsyncCommand(ac, redis_nginx_select_callback, context, SELECT_DATABASE_COMMAND, database);
-    } else {
-        ac = *context;
-    }
-
-    return ac;
+	return redis_nginx_open_context_internal(path, NULL, 0, database, password, context);
 }
 
 
