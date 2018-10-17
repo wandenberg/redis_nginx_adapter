@@ -198,7 +198,7 @@ redis_nginx_del_read(void *privdata)
 {
     ngx_connection_t *connection = (ngx_connection_t *) privdata;
     if (connection->read->active && redis_nginx_fd_is_valid(connection->fd)) {
-        if (ngx_del_event(connection->read, NGX_READ_EVENT, 0) == NGX_ERROR) {
+        if (ngx_del_event(connection->read, NGX_READ_EVENT, NGX_DISABLE_EVENT) == NGX_ERROR) {
             ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not delete read event to redis");
         }
     }
@@ -224,7 +224,7 @@ redis_nginx_del_write(void *privdata)
 {
     ngx_connection_t *connection = (ngx_connection_t *) privdata;
     if (connection->write->active && redis_nginx_fd_is_valid(connection->fd)) {
-        if (ngx_del_event(connection->write, NGX_WRITE_EVENT, 0) == NGX_ERROR) {
+        if (ngx_del_event(connection->write, NGX_WRITE_EVENT, NGX_DISABLE_EVENT) == NGX_ERROR) {
             ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not delete write event to redis");
         }
     }
@@ -279,7 +279,6 @@ redis_nginx_event_attach(redisAsyncContext *ac)
         ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "redis_nginx_adapter: could not get a connection for fd #%d", c->fd);
         return REDIS_ERR;
     }
-
 
     /* Register functions to start/stop listening for events */
     ac->ev.addRead = redis_nginx_add_read;
