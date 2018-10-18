@@ -1,3 +1,7 @@
+2018-10-19  1.2.0-1 Wandenberg Peixoto <wandenberg@gmail.com>
+  * Bug fix while closing connection to Redis.
+  * Simplify build.
+
 2018-01-16  1.1.0-1 Wandenberg Peixoto <wandenberg@gmail.com>
   * Add support to redis authentication.
 
