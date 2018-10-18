@@ -19,18 +19,28 @@ Basic usage
 
 ### Without authentication
 
+```
 redis_nginx_init();
 redisAsyncContext *redis_server = NULL;
 if (redis_nginx_open_context((const char *) "localhost", 6379, 0, NULL, &redis_server) != NULL) {
     redisAsyncCommand(redis_server, NULL, NULL, "SET %b %d-%d", r->uri.data, r->uri.len, r->headers_out.status, r->headers_out.content_length_n);
 }
 redis_nginx_close_context(&redis_server);
+```
 
 ### With authentication
 
+```
 redis_nginx_init();
 redisAsyncContext *redis_server = NULL;
 if (redis_nginx_open_context((const char *) "localhost", 6379, 0, (const char*) "password", &redis_server) != NULL) {
     redisAsyncCommand(redis_server, NULL, NULL, "SET %b %d-%d", r->uri.data, r->uri.len, r->headers_out.status, r->headers_out.content_length_n);
 }
 redis_nginx_close_context(&redis_server);
+```
+
+Example
+-------
+
+At the `example/module` folder there is a very basic Nginx module that uses the library.
+And a Dockerfile that demonstrate how to build and run it.
